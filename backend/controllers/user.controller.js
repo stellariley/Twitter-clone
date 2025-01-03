@@ -43,16 +43,16 @@ export const followUnfollowUser = async (req, res) => {
 			// Follow the user
 			await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
 			await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
-			// Send notification to the user 
-			 const newNotification = new Notification({
+			// Send notification to the user
+			const newNotification = new Notification({
 				type: "follow",
 				from: req.user._id,
 				to: userToModify._id,
 			});
 
-			await newNotification.save(); 
+			await newNotification.save();
 
-			res.status(200).json({ message: "User followed successfully" }); 
+			res.status(200).json({ message: "User followed successfully" });
 		}
 	} catch (error) {
 		console.log("Error in followUnfollowUser: ", error.message);
