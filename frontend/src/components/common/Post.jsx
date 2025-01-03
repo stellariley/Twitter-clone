@@ -46,37 +46,24 @@ const Post = ({ post }) => {
 
 	const { mutate: likePost, isPending: isLiking } = useMutation({
 		mutationFn: async () => {
-			try {
 				const res = await fetch(`/api/posts/like/${post._id}`, {
-					method: "POST",
+						method: "POST",
 				});
 				const data = await res.json();
-				if (!res.ok) {
-					throw new Error(data.error || "Something went wrong");
-				}
-				return data;
-			} catch (error) {
-				throw new Error(error);
-			}
+				if (!res.ok) throw new Error(data.error || "Failed to like post");
+				return data.likes; // Expect updated likes array
 		},
 		onSuccess: (updatedLikes) => {
-			// this is not the best UX, bc it will refetch all posts
-			// queryClient.invalidateQueries({ queryKey: ["posts"] });
-
-			// instead, update the cache directly for that post
-			queryClient.setQueryData(["posts"], (oldData) => {
-				return oldData.map((p) => {
-					if (p._id === post._id) {
-						return { ...p, likes: updatedLikes };
-					}
-					return p;
-				});
-			});
+				queryClient.setQueryData(["posts"], (oldPosts) =>
+						oldPosts.map((p) =>
+								p._id === post._id ? { ...p, likes: updatedLikes } : p
+						)
+				);
 		},
 		onError: (error) => {
-			toast.error(error.message);
+				toast.error(error.message);
 		},
-	});
+});
 
 	const { mutate: commentPost, isPending: isCommenting } = useMutation({
 		mutationFn: async () => {
